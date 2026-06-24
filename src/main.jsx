@@ -3,48 +3,116 @@ import { createRoot } from 'react-dom/client';
 import './styles.css';
 
 const STORAGE_KEY = 'waymaker-25-initiative-metrics';
-const PASSWORD_KEY = 'waymaker-25-initiative-admin-password';
-
+const SESSION_AUTH_KEY = 'waymaker-admin-authed';
 const DEFAULT_PASSWORD = 'waymaker';
 
 const DEFAULT_METRICS = [
-  { key: 'gospel_responses', name: 'Gospel Responses', value: 0 },
-  { key: 'baptisms', name: 'Baptisms', value: 0 },
-  { key: 'church_plants', name: 'Church Plants', value: 0 },
-  { key: 'goers_sent', name: 'Goers Sent', value: 0 },
+  { key: 'gospel_responses', name: 'Gospel Responses', value: 0, displayOrder: 1 },
+  { key: 'baptisms', name: 'Baptisms', value: 0, displayOrder: 2 },
+  { key: 'church_plants', name: 'Church Plants', value: 0, displayOrder: 3 },
+  { key: 'goers_sent', name: 'Goers Sent', value: 0, displayOrder: 4 },
   {
-    key: 'goers_unreached',
+    key: 'goers_sent_unreached',
     name: 'Goers Sent to Unreached People Groups',
     value: 0,
+    displayOrder: 5,
   },
 ];
 
-function getStoredMetrics() {
+function normalizeMetrics(metrics = []) {
+  return DEFAULT_METRICS.map((metric) => {
+    const saved = metrics.find((item) => item.key === metric.key);
+    return {
+      ...metric,
+      value: Number.isFinite(Number(saved?.value)) ? Number(saved.value) : 0,
+    };
+  });
+}
+
+function getLocalData() {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return DEFAULT_METRICS;
+    if (!stored) return { title: 'The 25 Initiative', metrics: DEFAULT_METRICS };
 
     const parsed = JSON.parse(stored);
+    const storedMetrics = Array.isArray(parsed) ? parsed : parsed.metrics;
 
-    return DEFAULT_METRICS.map((metric) => {
-      const saved = parsed.find((item) => item.key === metric.key);
-      return {
-        ...metric,
-        value: Number.isFinite(Number(saved?.value)) ? Number(saved.value) : 0,
-      };
-    });
+    return {
+      title: 'The 25 Initiative',
+      metrics: normalizeMetrics(storedMetrics),
+      updatedAt: parsed.updatedAt,
+    };
   } catch {
-    return DEFAULT_METRICS;
+    return { title: 'The 25 Initiative', metrics: DEFAULT_METRICS };
   }
 }
 
-function saveMetrics(metrics) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(metrics));
+function saveLocalData(data) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   window.dispatchEvent(new Event('metrics-updated'));
 }
 
-function getAdminPassword() {
-  return window.localStorage.getItem(PASSWORD_KEY) || DEFAULT_PASSWORD;
+async function fetchDashboardData() {
+  try {
+    const response = await fetch('/api/metrics', { cache: 'no-store' });
+    if (!response.ok) throw new Error('API unavailable');
+
+    const data = await response.json();
+    const normalized = {
+      title: data.title || 'The 25 Initiative',
+      metrics: normalizeMetrics(data.metrics),
+      updatedAt: data.updatedAt,
+    };
+
+    saveLocalData(normalized);
+    return normalized;
+  } catch {
+    return getLocalData();
+  }
+}
+
+async function saveDashboardData(metrics, password) {
+  const cleanedData = {
+    title: 'The 25 Initiative',
+    metrics: normalizeMetrics(metrics),
+  };
+
+  try {
+    const response = await fetch('/api/metrics', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-password': password,
+      },
+      body: JSON.stringify(cleanedData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Unable to save changes.');
+    }
+
+    const data = await response.json();
+    const normalized = {
+      title: data.title || 'The 25 Initiative',
+      metrics: normalizeMetrics(data.metrics),
+      updatedAt: data.updatedAt,
+    };
+
+    saveLocalData(normalized);
+    return normalized;
+  } catch (error) {
+    if (password !== DEFAULT_PASSWORD) {
+      throw error;
+    }
+
+    const localOnlyData = {
+      ...cleanedData,
+      updatedAt: new Date().toISOString(),
+    };
+    saveLocalData(localOnlyData);
+    return localOnlyData;
+  }
 }
 
 function formatNumber(value) {
@@ -62,22 +130,31 @@ function App() {
 }
 
 function DashboardPage() {
-  const [metrics, setMetrics] = useState(getStoredMetrics);
+  const [data, setData] = useState(getLocalData);
 
   useEffect(() => {
-    const refresh = () => setMetrics(getStoredMetrics());
+    let isMounted = true;
+
+    async function refresh() {
+      const nextData = await fetchDashboardData();
+      if (isMounted) setData(nextData);
+    }
+
+    refresh();
     const interval = window.setInterval(refresh, 2000);
 
     window.addEventListener('storage', refresh);
     window.addEventListener('metrics-updated', refresh);
 
     return () => {
+      isMounted = false;
       window.clearInterval(interval);
       window.removeEventListener('storage', refresh);
       window.removeEventListener('metrics-updated', refresh);
     };
   }, []);
 
+  const metrics = data.metrics || DEFAULT_METRICS;
   const featured = metrics.slice(0, 2);
   const supporting = metrics.slice(2);
 
@@ -92,7 +169,7 @@ function DashboardPage() {
         <header className="dashboard-header">
           <div>
             <p className="eyebrow">Waymaker.Church</p>
-            <h1>The 25 Initiative</h1>
+            <h1>{data.title || 'The 25 Initiative'}</h1>
           </div>
           <div className="header-mark" aria-hidden="true">
             25
@@ -126,24 +203,55 @@ function MetricCard({ metric, size = 'standard' }) {
 }
 
 function AdminPage() {
-  const [isAuthed, setIsAuthed] = useState(() => window.sessionStorage.getItem('waymaker-admin-authed') === 'true');
+  const [isAuthed, setIsAuthed] = useState(() => window.sessionStorage.getItem(SESSION_AUTH_KEY) === 'true');
   const [passwordAttempt, setPasswordAttempt] = useState('');
-  const [metrics, setMetrics] = useState(getStoredMetrics);
+  const [adminPassword, setAdminPassword] = useState(DEFAULT_PASSWORD);
+  const [metrics, setMetrics] = useState(DEFAULT_METRICS);
   const [status, setStatus] = useState('');
+  const [adminUrls, setAdminUrls] = useState([]);
 
   const dashboardUrl = useMemo(() => `${window.location.origin}/dashboard`, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadData() {
+      const nextData = await fetchDashboardData();
+      if (isMounted) setMetrics(nextData.metrics);
+    }
+
+    async function loadConfig() {
+      try {
+        const response = await fetch('/api/config');
+        if (!response.ok) return;
+        const config = await response.json();
+        if (isMounted) setAdminUrls(config.adminUrls || []);
+      } catch {
+        // The browser-only dev version will not have this endpoint.
+      }
+    }
+
+    loadData();
+    loadConfig();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   function handleLogin(event) {
     event.preventDefault();
 
-    if (passwordAttempt === getAdminPassword()) {
-      window.sessionStorage.setItem('waymaker-admin-authed', 'true');
-      setIsAuthed(true);
-      setPasswordAttempt('');
-      setStatus('');
-    } else {
-      setStatus('Wrong password.');
+    if (!passwordAttempt.trim()) {
+      setStatus('Enter the admin password.');
+      return;
     }
+
+    window.sessionStorage.setItem(SESSION_AUTH_KEY, 'true');
+    setAdminPassword(passwordAttempt);
+    setIsAuthed(true);
+    setPasswordAttempt('');
+    setStatus('');
   }
 
   function updateMetric(key, value) {
@@ -156,17 +264,16 @@ function AdminPage() {
     );
   }
 
-  function handleSave(event) {
+  async function handleSave(event) {
     event.preventDefault();
 
-    const cleaned = metrics.map((metric) => ({
-      ...metric,
-      value: Number.isFinite(Number(metric.value)) ? Number(metric.value) : 0,
-    }));
-
-    setMetrics(cleaned);
-    saveMetrics(cleaned);
-    setStatus('Saved. The dashboard will update automatically.');
+    try {
+      const saved = await saveDashboardData(metrics, adminPassword);
+      setMetrics(saved.metrics);
+      setStatus('Saved. The dashboard will update automatically.');
+    } catch (error) {
+      setStatus(error.message || 'Unable to save changes.');
+    }
   }
 
   if (!isAuthed) {
@@ -224,7 +331,7 @@ function AdminPage() {
               type="button"
               className="secondary-button"
               onClick={() => {
-                window.sessionStorage.removeItem('waymaker-admin-authed');
+                window.sessionStorage.removeItem(SESSION_AUTH_KEY);
                 setIsAuthed(false);
               }}
             >
@@ -237,7 +344,11 @@ function AdminPage() {
 
         <footer className="admin-footer">
           <p>Use this admin page from another device on the same network.</p>
-          <code>{window.location.origin}/admin</code>
+          {adminUrls.length > 0 ? (
+            adminUrls.map((url) => <code key={url}>{url}</code>)
+          ) : (
+            <code>{window.location.origin}/admin</code>
+          )}
         </footer>
       </section>
     </main>
