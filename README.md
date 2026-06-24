@@ -1,11 +1,11 @@
 # Waymaker Ticker — The 25 Initiative
 
-A simple local React dashboard for displaying all-time impact numbers for The 25 Initiative.
+A simple local dashboard for displaying all-time impact numbers for The 25 Initiative.
 
 ## Stage 1 Scope
 
 - Manual entry only
-- Browser-based dashboard
+- Packaged Mac app through Electron
 - Network-accessible admin page
 - One shared admin password
 - Fixed/static background
@@ -21,7 +21,43 @@ A simple local React dashboard for displaying all-time impact numbers for The 25
 4. Goers Sent
 5. Goers Sent to Unreached People Groups
 
-## Run the app
+## Default admin password
+
+```text
+waymaker
+```
+
+The packaged app stores the numbers on the display Mac. The admin page updates that shared data file, so another device on the same network can update the dashboard.
+
+## Build the Mac app from GitHub
+
+1. Open the GitHub repo.
+2. Go to **Actions**.
+3. Select **Build Mac App**.
+4. Click **Run workflow**.
+5. Wait for the workflow to finish.
+6. Download the artifact named **The-25-Initiative-macOS**.
+7. Unzip it and open the `.dmg` or `.zip` app build.
+
+## Using the packaged Mac app
+
+When the Mac app opens, it starts a local web server on port `4173`.
+
+Dashboard on the display Mac:
+
+```text
+http://127.0.0.1:4173/dashboard
+```
+
+Admin page from another device on the same network:
+
+```text
+http://YOUR-MAC-IP:4173/admin
+```
+
+The app menu includes an **Open Admin Panel** option and a **Copy Admin URL** option.
+
+## Local development
 
 Install dependencies:
 
@@ -29,54 +65,30 @@ Install dependencies:
 npm install
 ```
 
-Start the local server:
+Start the browser dev server:
 
 ```bash
 npm run dev
 ```
 
-The app runs at:
+The dev version runs at:
 
 ```text
 http://localhost:5173/dashboard
-```
-
-The admin page runs at:
-
-```text
 http://localhost:5173/admin
 ```
 
-## Update from another device on the network
+The browser dev version can still work with local browser storage, but the packaged Electron app is the version intended for shared network updates.
 
-The dev server is configured to listen on the local network.
+## Build locally on a Mac
 
-Find the Mac's IP address, then visit:
-
-```text
-http://YOUR-MAC-IP:5173/admin
+```bash
+npm install
+npm run dist:mac
 ```
 
-Example:
+Build outputs are placed in:
 
 ```text
-http://10.110.50.25:5173/admin
+release/
 ```
-
-## Default admin password
-
-```text
-waymaker
-```
-
-The password is intentionally simple for Stage 1 and is stored locally in the browser. This should only be used on a trusted internal network.
-
-## Display
-
-Open this route fullscreen on the display Mac:
-
-```text
-http://localhost:5173/dashboard
-```
-
-The dashboard checks for updated data every two seconds.
