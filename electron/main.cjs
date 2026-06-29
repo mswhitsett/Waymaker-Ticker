@@ -15,7 +15,7 @@ const DEFAULT_METRICS = [
   { key: 'goers_sent', name: 'Goers Sent', value: 0, displayOrder: 4 },
   {
     key: 'goers_sent_unreached',
-    name: 'Goers Sent to Unreached People Groups',
+    name: 'Goers to the Nations',
     value: 0,
     displayOrder: 5,
   },
