@@ -19,7 +19,7 @@ A simple local dashboard for displaying all-time impact numbers for The 25 Initi
 2. Baptisms
 3. Church Plants
 4. Goers Sent
-5. Goers Sent to Unreached People Groups
+5. Goers to the Nations
 
 ## Default admin password
 
