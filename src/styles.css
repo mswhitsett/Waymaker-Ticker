@@ -100,6 +100,10 @@ input {
   gap: 48px;
 }
 
+.title-block {
+  max-width: 1320px;
+}
+
 .eyebrow {
   margin: 0 0 10px;
   color: rgba(247, 247, 242, 0.68);
@@ -112,9 +116,22 @@ input {
 .dashboard-header h1 {
   margin: 0;
   max-width: 1220px;
-  font-size: clamp(56px, 5.6vw, 104px);
-  line-height: 0.94;
+  color: #ffffff;
+  font-size: clamp(78px, 7vw, 132px);
+  line-height: 0.88;
+  font-weight: 900;
   letter-spacing: -0.07em;
+  text-transform: uppercase;
+}
+
+.header-subtitle {
+  margin: 20px 0 0;
+  max-width: 1160px;
+  color: rgba(247, 247, 242, 0.7);
+  font-size: clamp(28px, 2.2vw, 42px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
@@ -136,21 +153,20 @@ input {
   min-height: 560px;
   display: grid;
   place-items: stretch;
-  padding-top: 14px;
+  padding-top: 0;
 }
 
 .metric-slide {
   position: relative;
   min-height: 100%;
-  padding: 64px 76px 74px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  padding: 58px 82px 66px;
+  display: grid;
+  align-items: center;
   overflow: hidden;
   background: rgba(247, 247, 242, 0.94);
   color: #071011;
   box-shadow: 0 34px 90px rgba(0, 0, 0, 0.28);
-  animation: slideFade 6000ms ease-in-out both;
+  animation: slideFade 12000ms ease-in-out both;
 }
 
 .metric-slide::after {
@@ -165,32 +181,35 @@ input {
   transform: rotate(-18deg);
 }
 
+.metric-slide-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  transform: translateY(-18px);
+}
+
 .metric-accent {
   width: 110px;
   height: 15px;
   background: #2a606a;
-  margin-bottom: 26px;
+  margin-bottom: 34px;
 }
 
 .metric-slide h2 {
-  position: relative;
-  z-index: 1;
   max-width: 1180px;
   margin: 0;
-  font-size: clamp(68px, 7.2vw, 142px);
-  line-height: 0.88;
-  letter-spacing: -0.065em;
+  font-size: clamp(64px, 6.8vw, 128px);
+  line-height: 0.92;
+  letter-spacing: -0.06em;
   text-transform: uppercase;
 }
 
 .metric-slide p {
-  position: relative;
-  z-index: 1;
-  margin: 30px 0 0;
-  font-size: clamp(190px, 21vw, 410px);
-  line-height: 0.76;
+  margin: 42px 0 0;
+  font-size: clamp(178px, 18.5vw, 360px);
+  line-height: 0.9;
   font-weight: 900;
-  letter-spacing: -0.1em;
+  letter-spacing: -0.075em;
 }
 
 @keyframes slideFade {
@@ -198,8 +217,8 @@ input {
     opacity: 0;
     transform: translateY(16px) scale(0.992);
   }
-  8%,
-  88% {
+  4%,
+  92% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
@@ -424,7 +443,11 @@ input:focus {
   }
 
   .dashboard-header h1 {
-    font-size: clamp(42px, 12vw, 70px);
+    font-size: clamp(54px, 14vw, 88px);
+  }
+
+  .header-subtitle {
+    font-size: clamp(20px, 5vw, 30px);
   }
 
   .slideshow-stage {
@@ -435,12 +458,16 @@ input:focus {
     padding: 38px;
   }
 
+  .metric-slide-content {
+    transform: translateY(-10px);
+  }
+
   .metric-slide h2 {
-    font-size: clamp(46px, 14vw, 88px);
+    font-size: clamp(46px, 14vw, 84px);
   }
 
   .metric-slide p {
-    font-size: clamp(144px, 34vw, 250px);
+    font-size: clamp(132px, 30vw, 220px);
   }
 
   .featured-grid,
