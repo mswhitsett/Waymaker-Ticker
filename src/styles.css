@@ -45,6 +45,10 @@ input {
   z-index: 2;
 }
 
+.slideshow-canvas {
+  justify-content: space-between;
+}
+
 .background-grid {
   position: absolute;
   inset: 0;
@@ -107,9 +111,9 @@ input {
 
 .dashboard-header h1 {
   margin: 0;
-  max-width: 1120px;
-  font-size: clamp(72px, 7vw, 132px);
-  line-height: 0.88;
+  max-width: 1220px;
+  font-size: clamp(56px, 5.6vw, 104px);
+  line-height: 0.94;
   letter-spacing: -0.07em;
   text-transform: uppercase;
 }
@@ -123,6 +127,86 @@ input {
   font-size: 58px;
   font-weight: 900;
   letter-spacing: -0.08em;
+  flex: 0 0 auto;
+}
+
+.slideshow-stage {
+  position: relative;
+  flex: 1;
+  min-height: 560px;
+  display: grid;
+  place-items: stretch;
+  padding-top: 14px;
+}
+
+.metric-slide {
+  position: relative;
+  min-height: 100%;
+  padding: 64px 76px 74px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background: rgba(247, 247, 242, 0.94);
+  color: #071011;
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.28);
+  animation: slideFade 6000ms ease-in-out both;
+}
+
+.metric-slide::after {
+  content: '';
+  position: absolute;
+  right: -120px;
+  bottom: -140px;
+  width: 390px;
+  height: 390px;
+  background: rgba(42, 96, 106, 0.17);
+  clip-path: polygon(24% 0, 100% 0, 76% 100%, 0 100%);
+  transform: rotate(-18deg);
+}
+
+.metric-accent {
+  width: 110px;
+  height: 15px;
+  background: #2a606a;
+  margin-bottom: 26px;
+}
+
+.metric-slide h2 {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0;
+  font-size: clamp(68px, 7.2vw, 142px);
+  line-height: 0.88;
+  letter-spacing: -0.065em;
+  text-transform: uppercase;
+}
+
+.metric-slide p {
+  position: relative;
+  z-index: 1;
+  margin: 30px 0 0;
+  font-size: clamp(190px, 21vw, 410px);
+  line-height: 0.76;
+  font-weight: 900;
+  letter-spacing: -0.1em;
+}
+
+@keyframes slideFade {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.992);
+  }
+  8%,
+  88% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(1.004);
+  }
 }
 
 .metrics-grid {
@@ -166,13 +250,6 @@ input {
 
 .metric-card-large {
   min-height: 310px;
-}
-
-.metric-accent {
-  width: 86px;
-  height: 12px;
-  background: #2a606a;
-  margin-bottom: 26px;
 }
 
 .metric-card h2 {
@@ -344,6 +421,26 @@ input:focus {
   .dashboard-header,
   .admin-header {
     flex-direction: column;
+  }
+
+  .dashboard-header h1 {
+    font-size: clamp(42px, 12vw, 70px);
+  }
+
+  .slideshow-stage {
+    min-height: 420px;
+  }
+
+  .metric-slide {
+    padding: 38px;
+  }
+
+  .metric-slide h2 {
+    font-size: clamp(46px, 14vw, 88px);
+  }
+
+  .metric-slide p {
+    font-size: clamp(144px, 34vw, 250px);
   }
 
   .featured-grid,
