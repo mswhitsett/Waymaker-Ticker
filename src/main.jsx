@@ -5,6 +5,7 @@ import './styles.css';
 const STORAGE_KEY = 'waymaker-25-initiative-metrics';
 const SESSION_AUTH_KEY = 'waymaker-admin-authed';
 const DEFAULT_PASSWORD = 'waymaker';
+const SLIDE_DURATION_MS = 6000;
 
 const DEFAULT_METRICS = [
   { key: 'gospel_responses', name: 'Gospel Responses', value: 0, displayOrder: 1 },
@@ -131,6 +132,7 @@ function App() {
 
 function DashboardPage() {
   const [data, setData] = useState(getLocalData);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -155,46 +157,45 @@ function DashboardPage() {
   }, []);
 
   const metrics = data.metrics || DEFAULT_METRICS;
-  const featured = metrics.slice(0, 2);
-  const supporting = metrics.slice(2);
+  const activeMetric = metrics[activeIndex % metrics.length] || metrics[0];
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveIndex((currentIndex) => (currentIndex + 1) % Math.max(metrics.length, 1));
+    }, SLIDE_DURATION_MS);
+
+    return () => window.clearInterval(interval);
+  }, [metrics.length]);
 
   return (
-    <main className="dashboard-shell">
+    <main className="dashboard-shell slideshow-shell">
       <div className="background-grid" />
       <div className="angle angle-one" />
       <div className="angle angle-two" />
       <div className="angle angle-three" />
 
-      <section className="dashboard-canvas">
-        <header className="dashboard-header">
+      <section className="dashboard-canvas slideshow-canvas">
+        <header className="dashboard-header slideshow-header">
           <div>
-            <p className="eyebrow">Waymaker.Church</p>
-            <h1>{data.title || 'The 25 Initiative'}</h1>
+            <p className="eyebrow">The 25 Initiative</p>
+            <h1>To our neighbors and to the nations since 2023.</h1>
           </div>
           <div className="header-mark" aria-hidden="true">
             25
           </div>
         </header>
 
-        <section className="metrics-grid featured-grid">
-          {featured.map((metric) => (
-            <MetricCard key={metric.key} metric={metric} size="large" />
-          ))}
-        </section>
-
-        <section className="metrics-grid supporting-grid">
-          {supporting.map((metric) => (
-            <MetricCard key={metric.key} metric={metric} />
-          ))}
+        <section className="slideshow-stage" aria-live="polite">
+          <MetricSlide key={`${activeMetric.key}-${activeIndex}`} metric={activeMetric} />
         </section>
       </section>
     </main>
   );
 }
 
-function MetricCard({ metric, size = 'standard' }) {
+function MetricSlide({ metric }) {
   return (
-    <article className={`metric-card metric-card-${size}`}>
+    <article className="metric-slide">
       <div className="metric-accent" />
       <h2>{metric.name}</h2>
       <p>{formatNumber(metric.value)}</p>
