@@ -5,7 +5,7 @@ import './styles.css';
 const STORAGE_KEY = 'waymaker-25-initiative-metrics';
 const SESSION_AUTH_KEY = 'waymaker-admin-authed';
 const DEFAULT_PASSWORD = 'waymaker';
-const SLIDE_DURATION_MS = 6000;
+const SLIDE_DURATION_MS = 12000;
 
 const DEFAULT_METRICS = [
   { key: 'gospel_responses', name: 'Gospel Responses', value: 0, displayOrder: 1 },
@@ -176,9 +176,9 @@ function DashboardPage() {
 
       <section className="dashboard-canvas slideshow-canvas">
         <header className="dashboard-header slideshow-header">
-          <div>
-            <p className="eyebrow">The 25 Initiative</p>
-            <h1>To our neighbors and to the nations since 2023.</h1>
+          <div className="title-block">
+            <h1>The 25 Initiative</h1>
+            <p className="header-subtitle">To our neighbors and to the nations since 2023.</p>
           </div>
           <div className="header-mark" aria-hidden="true">
             25
@@ -196,9 +196,11 @@ function DashboardPage() {
 function MetricSlide({ metric }) {
   return (
     <article className="metric-slide">
-      <div className="metric-accent" />
-      <h2>{metric.name}</h2>
-      <p>{formatNumber(metric.value)}</p>
+      <div className="metric-slide-content">
+        <div className="metric-accent" />
+        <h2>{metric.name}</h2>
+        <p>{formatNumber(metric.value)}</p>
+      </div>
     </article>
   );
 }
