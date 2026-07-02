@@ -6,6 +6,8 @@ const STORAGE_KEY = 'waymaker-25-initiative-metrics';
 const SESSION_AUTH_KEY = 'waymaker-admin-authed';
 const DEFAULT_PASSWORD = 'waymaker';
 const SLIDE_DURATION_MS = 12000;
+const DESIGN_WIDTH = 1920;
+const DESIGN_HEIGHT = 1080;
 
 const DEFAULT_METRICS = [
   { key: 'gospel_responses', name: 'Gospel Responses', value: 0, displayOrder: 1 },
@@ -120,6 +122,26 @@ function formatNumber(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
 }
 
+function getDesignedScale() {
+  return Math.min(window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT);
+}
+
+function useDesignedScale() {
+  const [scale, setScale] = useState(getDesignedScale);
+
+  useEffect(() => {
+    function updateScale() {
+      setScale(getDesignedScale());
+    }
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
+
+  return scale;
+}
+
 function App() {
   const path = window.location.pathname;
 
@@ -133,6 +155,7 @@ function App() {
 function DashboardPage() {
   const [data, setData] = useState(getLocalData);
   const [activeIndex, setActiveIndex] = useState(0);
+  const canvasScale = useDesignedScale();
 
   useEffect(() => {
     let isMounted = true;
@@ -169,29 +192,31 @@ function DashboardPage() {
 
   return (
     <main className="dashboard-shell slideshow-shell">
-      <div className="background-grid" />
-      <div className="angle angle-one" />
-      <div className="angle angle-two" />
-      <div className="angle angle-three" />
+      <section className="dashboard-canvas slideshow-canvas" style={{ '--canvas-scale': canvasScale }}>
+        <div className="background-grid" />
+        <div className="angle angle-one" />
+        <div className="angle angle-two" />
+        <div className="angle angle-three" />
 
-      <section className="dashboard-canvas slideshow-canvas">
-        <header className="dashboard-header slideshow-header">
-          <div className="title-block">
-            <h1>The 25 Initiative</h1>
-            <p className="header-subtitle">
-              To our neighbors and to the nations
-              <br />
-              since 2023.
-            </p>
-          </div>
-          <div className="header-mark" aria-hidden="true">
-            25
-          </div>
-        </header>
+        <div className="canvas-content">
+          <header className="dashboard-header slideshow-header">
+            <div className="title-block">
+              <h1>The 25 Initiative</h1>
+              <p className="header-subtitle">
+                To our neighbors and to the nations
+                <br />
+                since 2023.
+              </p>
+            </div>
+            <div className="header-mark" aria-hidden="true">
+              25
+            </div>
+          </header>
 
-        <section className="slideshow-stage" aria-live="polite">
-          <MetricSlide key={`${activeMetric.key}-${activeIndex}`} metric={activeMetric} />
-        </section>
+          <section className="slideshow-stage" aria-live="polite">
+            <MetricSlide key={`${activeMetric.key}-${activeIndex}`} metric={activeMetric} />
+          </section>
+        </div>
       </section>
     </main>
   );
