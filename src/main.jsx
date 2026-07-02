@@ -178,7 +178,11 @@ function DashboardPage() {
         <header className="dashboard-header slideshow-header">
           <div className="title-block">
             <h1>The 25 Initiative</h1>
-            <p className="header-subtitle">To our neighbors and to the nations since 2023.</p>
+            <p className="header-subtitle">
+              To our neighbors and to the nations
+              <br />
+              since 2023.
+            </p>
           </div>
           <div className="header-mark" aria-hidden="true">
             25
